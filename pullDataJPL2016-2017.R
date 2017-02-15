@@ -9,6 +9,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(scales)
+library(stringr)
 source('pullDataJPL2015_2016.R')
 ## LOAD THE DATA ####
 
