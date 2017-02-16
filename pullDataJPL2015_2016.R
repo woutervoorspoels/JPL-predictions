@@ -8,7 +8,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(scales)
-
+library(stringr)
 ## LOAD THE DATA ####
 JPL2015 = read_html("https://nl.wikipedia.org/wiki/Eerste_klasse_2015-16_(voetbal_België)")
 help(html_nodes)

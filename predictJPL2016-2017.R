@@ -33,6 +33,8 @@ prior_abilities[17,2:5] <- c(mean(prior_abilities$attack,na.rm=T),1,
 require(rjags)
 require(runjags)
 
+## first, on the basis of the current season, non committal priors
+
 ## data file, including games to be predicted
 inputData <- left_join(rbind(JPL2016$finishedGames[,1:4],JPL2016$comingGames[,c(3,4,7,8)]),
                   JPL2016$allTeams[,1:2], by = c("home" = "IDCODE"))%>%
@@ -46,23 +48,19 @@ dataList <- list(
   T1 = inputData$homeID,
   T2 = inputData$awayID,
   X1=inputData$homegoals,
-  X2=inputData$awaygoals,
-  pattack=prior_abilities$attack,
-  pattacksd=prior_abilities$sd.attack,
-  pdefense=prior_abilities$defense,
-  pdefensesd=prior_abilities$sd.defense
+  X2=inputData$awaygoals
 )
 
 initsList <- function(){ 
   Tattack = rnorm(dataList$nTeams,1,1) #attack parameter
   Tdefense= rnorm(dataList$nTeams,1,1) # defense paramter
-  gamma = rgamma(1,1,1) # home advantage parameter
+  gamma = runif(dataList$nTeams,.2,1.8) # home advantage parameter
   return(list(Tattack=Tattack,Tdefense=Tdefense,gamma=gamma))
 }
 
 
 runJagsout <- run.jags( method = "parallel",
-                        model = "jpl_classic_inferredpriors.txt",
+                        model = "jplclassic.txt",
                         monitor = c("Tattack","Tdefense", "gamma", "delta"),
                         data = dataList,
                         inits = initsList,
