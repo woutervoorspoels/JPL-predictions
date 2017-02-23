@@ -1,0 +1,38 @@
+model{  
+
+#data
+for (i in 1:nGames ){
+
+#calculate scoring probability for each team
+x1[i,1] <- Tattack[ T1[i] ]
+x1[i,2] <- Tdefense[ T1[i] ]
+x2[i,1] <- Tattack[ T2[i] ]
+x2[i,2] <- Tdefense[ T2[i] ]
+
+
+#combine to arrive at two lambdas
+
+lambda1[i] <- gamma[ T1[i] ] * Tattack[ T1[i] ] * Tdefense[ T2[i] ]
+lambda2[i] <- Tattack[ T2[i] ] * Tdefense[ T1[i] ]
+
+#resulting expected goals
+X1[i] ~ dpois(lambda1[i])
+X2[i] ~ dpois(lambda2[i])
+X1pred[i] ~ dpois(lambda1[i])
+X2pred[i] ~ dpois(lambda2[i])
+delta[i] <- X1pred[i] - X2pred[i]
+
+}
+
+# a prior on all team parameters
+# in this model, i try to estimate two parameters for each team
+
+for (j in 1:nTeams){
+Tattack[j] ~ dgamma(1,1) #check these priors!!
+Tdefense[j] ~ dgamma(1,1) #check these priors!!
+gamma[j] ~ dgamma(1,1)
+}
+
+
+}
+#end model

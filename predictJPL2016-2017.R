@@ -52,23 +52,28 @@ dataList <- list(
 )
 
 initsList <- function(){ 
-  Tattack = rnorm(dataList$nTeams,1,1) #attack parameter
-  Tdefense= rnorm(dataList$nTeams,1,1) # defense paramter
-  gamma = runif(dataList$nTeams,.2,1.8) # home advantage parameter
+  Tattack = rgamma(dataList$nTeams,1,1) #attack parameter
+  Tdefense= rgamma(dataList$nTeams,1,1) # defense paramter
+  gamma = rgamma(dataList$nTeams,1,1) # home advantage parameter
   return(list(Tattack=Tattack,Tdefense=Tdefense,gamma=gamma))
 }
 
+nchains <- 3
+nadapt <- 1000
+nburnin <- 10000
+nsample <- 10000
+nthin <- 1
 
 runJagsout <- run.jags( method = "parallel",
                         model = "jplclassic.txt",
                         monitor = c("Tattack","Tdefense", "gamma", "delta"),
                         data = dataList,
                         inits = initsList,
-                        n.chains = 3,
-                        thin = 10,
-                        adapt = 10000,
-                        burnin = 10000,
-                        sample = 10000,
+                        n.chains = nchains,
+                        thin = nthin,
+                        adapt = nadapt,
+                        burnin = nburnin,
+                        sample = nsample,
                         summarise=FALSE
 )
 
@@ -77,12 +82,14 @@ codaSamples = as.mcmc.list(runJagsout)
 gelman.diag(codaSamples)
 allSamples<-combine.mcmc(codaSamples)
 
-abilities <- matrix(colMeans(allSamples)[1:32],16,2)
-sds <- matrix(apply(allSamples[,1:32],2,sd),16,2)
-abilities <- data.frame(cbind(seq(1,16),abilities,sds))
+abilities <- matrix(colMeans(allSamples)[1:34],17,2)
+sds <- matrix(apply(allSamples[,1:34],2,sd),17,2)
+homeA <- as.numeric(colMeans(allSamples)[35:51])
+abilities <- data.frame(cbind(seq(1,17),abilities,sds))
 colnames(abilities) <- c("teamID","attack","defense","sd.attack","sd.defense")
 abilities <- left_join(abilities, JPL2015$teams, by = c('teamID' = 'ID')) %>%
   select(teamID,IDCODE,defense,attack,sd.attack,sd.defense)
+abilities$homeAdvantage <- homeA
 abilities
 
 
