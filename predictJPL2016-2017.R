@@ -89,6 +89,8 @@ abilities <- data.frame(cbind(seq(1,17),abilities,sds))
 colnames(abilities) <- c("teamID","attack","defense","sd.attack","sd.defense")
 abilities <- left_join(abilities, JPL2015$teams, by = c('teamID' = 'ID')) %>%
   select(teamID,IDCODE,defense,attack,sd.attack,sd.defense)
+abilities$IDCODE <- as.character(abilities$IDCODE)
+abilities$IDCODE[17] <- "EUP"
 abilities$homeAdvantage <- homeA
 abilities
 
@@ -96,8 +98,18 @@ abilities
 
 # III. MAKE DECISIONS
 #########################
-
 ## e.g. which teams will be in PO I?
 ## e.g. predict the ladder at autumn
 ## e.g. ...
+
+### get results of games and compare
+
+colnames(allSamples)
+
+outcomes <- colMeans(allSamples)[,52:290]
+
+
+
+
+
 

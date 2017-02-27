@@ -60,16 +60,22 @@ allgames <- champ_results
 allteams <- merge(JPL2015[[1]],teams, all.x=T,all.y=T,by="Plaats") %>%
 arrange(ID) %>% select(ID,IDCODE,3:4,7,1) %>% mutate(IDCODE=as.character(IDCODE))
 allteams[17,] <- c(17,"EUP", filter(teams,Plaats=="Eupen")%>%select(2:3,1,Plaats))
-nname <- unique(comingGames$home)
-code <- c('W-B','EUP','KVK', 'KVM', 'M-P','GNT',
-          'AND','STA', 'CHA', 'CLU','STV', 'WES',
-          'ZWA','GNK','LOK', 'KVO')
+
+nname <- c('Waasland-Beveren', 'Sint-Truiden', 'Zulte Waregem','KV Mechelen', 'KV Oostende', "Moeskroen",
+           "Racing Genk",'Charleroi', "Club Brugge", "Anderlecht", "Standard", "AA Gent",
+           "KV Kortrijk", "Sporting Lokeren", "Westerlo", "Eupen")
+code <- c('W-P', 'STV', 'ZWA', 'KVM','KVO','M-P','GNK','CHA','CLU', 'AND','STA', 'GNT','KVK',
+          'LOK','WES','EUP')
 
 identificationTable <- data.frame(clubname=nname,IDCODE=code)
+
+## identification Table
+
 allteams <- left_join(allteams,identificationTable) %>% select(1:4,7,6)%>%
   mutate(clubname=as.character(clubname))
-allteams$clubname[3] <- 'OH leuven'
 colnames(allteams)[3:4] <- c('stamnummer', 'club')
+allteams$clubname[14] <- 'Waasland-Beveren'
+allteams$clubname[10] <- 'OH Leuven'
 comingGames <- left_join(comingGames,allteams,by= c("home" = "clubname")) %>%
   select(1:6,IDCODE,ID)%>%rename(clubnamehome=home,clubnameaway=away) %>%
   rename(home=IDCODE,homeID=ID)%>%
