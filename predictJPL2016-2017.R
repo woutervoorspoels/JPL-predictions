@@ -19,14 +19,12 @@ JPL2016 <- pullDataJPL2016_2017()
 ##########################
 
 ## last season's posterior is today's prior
-source('generate_priors_from2015-2016.R')
-prior_abilities <- generate_abilities()
-prior_abilities <- left_join(JPL2016$allTeams,
-                             prior_abilities, by=c("ID" = "teamID")) %>%
-  select(ID,defense:sd.defense)
+#source('generate_priors_from2015-2016.R')
+#prior_abilities <- generate_abilities()
+#prior_abilities <- left_join(JPL2016$allTeams, prior_abilities, by=c("ID" = "teamID")) %>%
+#  select(ID,defense:sd.defense)
 ## and add a non-comittal prior for the new team in the league
-prior_abilities[17,2:5] <- c(mean(prior_abilities$attack,na.rm=T),1,
-                             mean(prior_abilities$defense,na.rm=T),1)
+#prior_abilities[17,2:5] <- c(mean(prior_abilities$attack,na.rm=T),1, mean(prior_abilities$defense,na.rm=T),1)
 
 # II. PREDICT COMING GAMES
 ##########################
@@ -103,13 +101,22 @@ abilities
 ## e.g. ...
 
 ### get results of games and compare
-
 colnames(allSamples)
-
 outcomes <- colMeans(allSamples)[,52:290]
 
+modelfit <- modelfit <- rbind(JPL2016$finishedGames,cbind(JPL2016$comingGames[,c(3,4,7,8)],delta=NA))
+modelfit <- cbind(modelfit,model=outcomes)
+modelfit$result <- ifelse(modelfit$delta>0,1,-1)
+modelfit$result[modelfit$delta==0] <- 0
 
+##performance
+drawvalue=.2
+modelfit$predict <- ifelse(modelfit$model>0,1,-1)
+modelfit$predict[modelfit$model<drawvalue & modelfit$model>-drawvalue] <- 0
+table(modelfit$result,modelfit$predict)
 
+## outcomes
 
+tail(modelfit,n=16)
 
 
