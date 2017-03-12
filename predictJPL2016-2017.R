@@ -6,9 +6,7 @@ rm(list=ls())
 ### pull data from previous season, and all games untill current t
 ### data from previous season will be used for priors
 ### data from the current season has finished games and coming games
-source('pullDataJPL2015_2016.R')
 source('pullDataJPL2016-2017.R')
-JPL2015 <- pullDataJPL2015_2016()
 JPL2016 <- pullDataJPL2016_2017()
 ## score data is automatically pulled from wikipedia pages (they should be up to date)
 ## both finished games and coming games are relative to current time
@@ -102,10 +100,11 @@ abilities
 
 ### get results of games and compare
 colnames(allSamples)
-outcomes <- colMeans(allSamples)[,52:290]
+outcomes <- colMeans(allSamples)[52:290]
 
-modelfit <- modelfit <- rbind(JPL2016$finishedGames,cbind(JPL2016$comingGames[,c(3,4,7,8)],delta=NA))
+modelfit <- rbind(JPL2016$finishedGames,cbind(JPL2016$comingGames[,c(3,4,7,8)],delta=NA))
 modelfit <- cbind(modelfit,model=outcomes)
+modelfit$homewin <- apply(allSamples[,52:290],2,function(x) mean(x>0))
 modelfit$result <- ifelse(modelfit$delta>0,1,-1)
 modelfit$result[modelfit$delta==0] <- 0
 
@@ -117,6 +116,6 @@ table(modelfit$result,modelfit$predict)
 
 ## outcomes
 
-tail(modelfit,n=16)
+tail(modelfit,n=8)
 
 

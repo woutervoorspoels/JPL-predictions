@@ -5,35 +5,7 @@ require(runjags)
 source('pullDataJPL2016-2017.R')
 JPL2016 <- pullDataJPL2016_2017()
 
-
-
-## first, on the basis of the current season, non committal priors
-
-## data file: all games played
-inputData <- left_join(rbind(JPL2016$finishedGames[,1:4],JPL2016$comingGames[,c(3,4,7,8)]),
-                       JPL2016$allTeams[,1:2], by = c("home" = "IDCODE"))%>%
-  rename(homeID=ID)%>%
-  left_join(JPL2016$allTeams[,1:2], by = c("away" = "IDCODE"))%>%
-  rename(awayID=ID)%>%select(1:2,5:6,3:4)%>%
-  filter(!is.na(homegoals))
-
-## sample and predict
-niter <- 10
-wspec <- rep(NA,niter) # p(home win given a predicted home win)
-lspec <- rep(NA,niter) # p(home loss given predicted loss)
-wsens <- rep(NA,niter) # p(predicted home win given a win)
-lsens <- rep(NA,niter) # p(predicted home loss given a loss)
-tab <- array(data=NA,c(3,2,niter))
-
-for (i in 1:niter){
-  temp <- evaluate(inputData,16)
-  wspec[i] <- temp$wspec
-  lspec[i] <- temp$lspec
-  wsens[i] <- temp$wsens
-  lsens[i] <- temp$lsens
-}
-#####
-
+###### ad hoc evaluation function #######
 
 ### evaluation function
 evaluate <- function(x,testsize){
@@ -65,8 +37,8 @@ evaluate <- function(x,testsize){
   nchains <- 2
   nadapt <- 100
   nburnin <- 1000
-  nsample <- 10000
-  nthin <- 2
+  nsample <- 5000
+  nthin <- 1
   
   runJagsout <- run.jags( method = "parallel",
                           model = "jplclassic.txt",
@@ -104,7 +76,36 @@ evaluate <- function(x,testsize){
     
     wse <- eval[3,2]/sum(eval[3,])
     lse <- eval[1,1]/sum(eval[1,])
-  }
-  
   return(list(wspec=wsp,lspec=lsp,wsens=wse,lsens=lse, tabular=eval))
+  }
 }
+
+
+## first, on the basis of the current season, non committal priors
+
+## data file: all games played
+inputData <- left_join(rbind(JPL2016$finishedGames[,1:4],JPL2016$comingGames[,c(3,4,7,8)]),
+                       JPL2016$allTeams[,1:2], by = c("home" = "IDCODE"))%>%
+  rename(homeID=ID)%>%
+  left_join(JPL2016$allTeams[,1:2], by = c("away" = "IDCODE"))%>%
+  rename(awayID=ID)%>%select(1:2,5:6,3:4)%>%
+  filter(!is.na(homegoals))
+
+## sample and predict
+niter <- 50
+wspec <- rep(NA,niter) # p(home win given a predicted home win)
+lspec <- rep(NA,niter) # p(home loss given predicted loss)
+wsens <- rep(NA,niter) # p(predicted home win given a win)
+lsens <- rep(NA,niter) # p(predicted home loss given a loss)
+tab <- array(data=NA,c(3,2,niter))
+
+for (i in 1:niter){
+  temp <- evaluate(inputData,16)
+  wspec[i] <- temp$wspec
+  lspec[i] <- temp$lspec
+  wsens[i] <- temp$wsens
+  lsens[i] <- temp$lsens
+}
+#####
+
+
